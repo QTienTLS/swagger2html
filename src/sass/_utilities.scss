@@ -1,0 +1,45 @@
+.u-center-text{
+  text-align: center;
+}
+
+.u-mt-small{
+  margin-top: 2rem;
+}
+.u-mt-medium{
+  margin-top: 4rem;
+}
+.u-mt-huge{
+  margin-top: 8rem;
+}
+
+.box-form{
+  box-shadow: 0 1.5rem 3rem rgba($color-black, .15);
+  width: 90%;
+  border-radius: 5px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3rem;
+  margin: 3rem;
+  background-color: #fff;
+  .legend-title{
+    // font-size: 1.8rem;
+    font-weight: 700;
+    color: $color-primary;
+    padding: 1rem 0 1rem 0rem;
+    text-align: left;
+    position: absolute;
+    top: 0;
+    left: 2rem;
+    width: calc(100% - 4rem);
+    border-bottom: 1px solid $color-primary;
+  }
+  .body{
+    padding: 1rem 0 1rem 0rem;
+    text-align: left;
+    position: relative;
+    top: 1rem;
+    left: 0;
+    width: 100%;
+  }
+}
