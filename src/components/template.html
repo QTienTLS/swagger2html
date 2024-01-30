@@ -5,20 +5,167 @@
       <div class="input-container">
         <div class="info-row">
           <div class="key">
-            Nhập api: 
+            Nhập api:
           </div>
           <div class="value">
-            <input type="text" id="api" class="form-control">
+            <input v-on:keyup.enter="onEnter" v-model="txtUrl" type="text" id="api" class="form-control">
           </div>
-          <div class="btn btn-primary">Thêm (Enter)</div>
+          <div class="btn btn-primary" @click="onEnter">Thêm (Enter)</div>
         </div>
+        <!-- <div class="info-row">
+          <div class="key">Select</div>
+          <div class="value">
+            <QTSelect 
+            :options="[
+            { id: 1, text: 'VNP017537-Hồ Văn Đức-0919854488' },
+            { id: 2, text: 'VNP017572-Nguyễn Hiệp-0911999968' },
+            { id: 3, text: 'VNP016793-Nguyễn Nghi-0913720734' },
+            { id: 4, text: 'VNP017915-Phạm Văn Sếch-0917814828' },
+          ]"
+          v-model="selected"
+            />
+          </div>
+        </div> -->
       </div>
     </div>
     <div class="box-form">
       <div class="legend-title">Danh sách API</div>
       <div class="body">
-        
+        <el-table :data="listAPI" :header-row-class-name="tableHeaderClass" :row-class-name="tableRowClass">
+          <el-table-column prop="stt" label="STT" width="120px"></el-table-column>
+          <el-table-column prop="url" label="API"></el-table-column>
+          <el-table-column prop="host" label="Host" width="200px"></el-table-column>
+          <el-table-column prop="method" label="Method" width="120px">
+            <template #default="scope">
+              <div style="text-align: center;">
+                <el-tag :type="scope.row.method === 'GET' ? '' : 'danger'">{{ scope.row.method }}</el-tag>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="action" label="Action" width="120px">
+            <template #default="scope">
+              <div class="action-wrapper">
+                <div class="btn-round btn--primary" @click="onView(scope.row)">
+                  <Icon icon="fa-solid:eye" width="18px" height="18px" />
+                </div>
+                <div class="btn-round btn--danger" @click="onDelete(scope.row)">
+                  <Icon icon="mingcute:delete-fill" width="18px" height="18px" />
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+
+        </el-table>
       </div>
     </div>
   </div>
+  <Modal :title="modalTitle" ref="APIHtml" size="max">
+    <h3>Parameters</h3>
+    <div class="parameter">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 150px;">Name</th>
+            <th style="width: 120px;">Parameter Type</th>
+            <th>Data Type</th>
+            <th style="width: 150px;">Required</th>
+            <th style="width: 150px;">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in currentAPI.json[currentAPI.method.toLowerCase()].parameters" :key="index">
+            <td>{{ item.name }}</td>
+            <td>{{ item.in }}</td>
+            <td v-if="!item.schema">{{ item.type }}</td>
+            <td v-else>
+              <!-- name: item.shcema.$ref.split('/')[2] -->
+              <div class="schema-title">
+                {{currentAPI.schema[item.schema.$ref.split('/')[2]].title}}
+              </div>
+              <table style="border-top: none;" class="table-schema">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Property</th>
+                    <th style="width: 10%;">Type</th>
+                    <th style="width: 35%;">Description</th>
+                    <th style="width: 10%;">Format</th>
+                    <th>Required</th>
+                    <th>ReadOnly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(i, index) in Object.keys(currentAPI.schema[item.schema.$ref.split('/')[2]].properties)"
+                    :key="index">
+                    <td>{{ i }}</td>
+                    <td>{{ currentAPI.schema[item.schema.$ref.split('/')[2]].properties[i].type }}</td>
+                    <td>{{ currentAPI.schema[item.schema.$ref.split('/')[2]].properties[i].description }}</td>
+                    <td>{{ currentAPI.schema[item.schema.$ref.split('/')[2]].properties[i].format }}</td>
+                    <td>N</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+            <td>{{ item.required?'Y':'N' }}</td>
+            <td>{{ item.description }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Responses</h3>
+    <div class="response">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 120px;">HTTP Status Code</th>
+            <th style="width: 250px;">Reason</th>
+            <th>Response Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in Object.keys(currentAPI.json[currentAPI.method.toLowerCase()].responses)"
+            :key="index">
+            <td>{{ item }}</td>
+            <td>{{ currentAPI.json[currentAPI.method.toLowerCase()].responses[item].description }}</td>
+            <td v-if="!currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema"></td>
+            <td v-else>
+              <div class="schema-title">
+                {{currentAPI.schema[currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema.$ref.split('/')[2]].title}}
+              </div>
+              <table style="border-top: none;" class="table-schema">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Property</th>
+                    <th style="width: 10%;">Type</th>
+                    <th style="width: 35%;">Description</th>
+                    <th style="width: 10%;">Format</th>
+                    <th>Required</th>
+                    <th>ReadOnly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(i, index) in Object.keys(currentAPI.schema[currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema.$ref.split('/')[2]].properties)"
+                    :key="index">
+                    <td>{{ i }}</td>
+                    <td>{{
+                      currentAPI.schema[currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema.$ref.split('/')[2]].properties[i].type
+                      }}</td>
+                    <td>{{
+                      currentAPI.schema[currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema.$ref.split('/')[2]].properties[i].description
+                      }}</td>
+                    <td>{{
+                      currentAPI.schema[currentAPI.json[currentAPI.method.toLowerCase()].responses[item].schema.$ref.split('/')[2]].properties[i].format
+                      }}</td>
+                    <td>N</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </Modal>
 </div>

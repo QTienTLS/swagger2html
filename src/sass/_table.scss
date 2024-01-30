@@ -1,0 +1,30 @@
+.table-header{
+  &>*{
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: #2b2b2b;
+    border: #c1c1c1 1px solid;
+    background-color: $color-primary !important;
+    .cell{
+      text-align: center;
+    }
+  }
+}
+
+tbody{
+  .el-table__row{
+    border-bottom: #c1c1c1 1px solid !important;
+
+    .el-table__cell{
+      border-left: #c1c1c1 1px solid;
+      
+      &:last-child{
+        border-right: #c1c1c1 1px solid;
+      }
+    }
+  }
+  .el-table__row:nth-child(even){
+    background-color: $color-primary-lighter;
+  
+  }
+}
